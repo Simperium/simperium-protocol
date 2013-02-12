@@ -75,7 +75,7 @@ Clients can request an entire entity at any version stored on the server. The `e
 
     0:e:keyname.1
     
-The server will respond with the same name and version followed by a new line `\n` and the response for the entity. If the entity represented by that `key` and `version` do not exist, the response is a single question mark `?`:
+The server will respond with the same name and version followed by a new line `\n` and the response for the entity. If the entity represented by that `key` and `version` does not exist, the response is a single question mark `?`:
 
     0:e:keyname.1
     ?
