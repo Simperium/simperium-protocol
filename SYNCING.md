@@ -8,7 +8,8 @@ How to sync.
 - **bucket** : a namespace for storing one an **entity**
 - **entity** : a JSON serializable object that is stored in a **bucket**
 - **index** : an array of hashes that contain an **entity**'s `key` and `v` (version)
-- **ccid** or **cv** : An **index**'s last change version in an alphanumeric string: `7u37290aaddfkk`
+- **cv** : An **index**'s last change version in an alphanumeric string: `7u37290aaddfkk`
+- **ccid** : An unique identifier for a specific change operation used in the `c` or [*command* message](#changec).
 
 This assumes the client is starting with an empty **index**.
 
@@ -86,3 +87,43 @@ Otherwise the response will be a JSON payload. The entity's data is stored in th
     {"data": {"1": 2, "0": 1, "2": "Three"}}
 
 
+### Index Change Version: cv
+
+To keep an existing index up to date, a client can request all changes since a specific *change version* or `cv`. The `cv` command takes one parameter: the *change version* to begin looking for bucket changes.
+
+For example, the client may have stored an index locally that was received with change version `abc123`. The next time the client connects it will want to request all changes that may have happenned to the bucket will the client was disconnected. The client will send:
+
+    0:cv:abc123
+
+The server will look for all changes on the bucket since `cv` of `abc123`. If the `cv` does not exist for that bucket, the server will respond with:
+
+    0:cv:?
+
+Otherwise it will respond with a *change* `c` command that contains a JSON payload describing all of the changes that need to be applied to an index at change version `abc123` to match the current change version:
+
+    0:c:[{"clientid": "sjs-2012121301-9af05b4e9a95132f614c", "id": "newobject", "o": "M", "v": {"new": {"o": "+", "v": "object"}}, "ev": 1, "cv": "511aa58737a401031d57db90", "ccids": ["3a5cbd2f0a71fca4933fff5a54d22b60"]}]
+
+If the change version is up to date the server will respond with an empty `c` message:
+
+    0:c:[]
+
+### Change: c
+
+To communicate changes to the bucket index clients and servers should send and respond to change messages: `c`. A change messages contains a JSON payload which is an array of hashes that describe each change version to be applied to the index in order to bring it to a current state.
+
+A change has these keys:
+
+- **clientid** : the client that originally made the change
+- **cv** : the change version of the index at the point of this change
+- **ev** : the version of the entity described in this change operation
+- **id** : the key of the entity this change applies to
+- **o** : the type of operaton to perform
+- **v** : the values to use for the operation
+
+Possible operations `o`:
+- **M** : *modify* -- the operation is a modification to an entity
+- **-** : *remove* -- remove the entity from the index
+
+For modify operations the `v` or *value* key will contain an object diff compatible with [jsondiff][].
+
+[jsondiff]: https://github.com/simperium/jsondiff
