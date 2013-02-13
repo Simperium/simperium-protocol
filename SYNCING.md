@@ -127,7 +127,7 @@ Otherwise the response will be a JSON payload. The entity's data is stored in th
 
 To keep an existing index up to date, a client can request all changes since a specific *change version* or `cv`. The `cv` command takes one parameter: the *change version* to begin looking for bucket changes.
 
-For example, the client may have stored an index locally that was received with change version `abc123`. The next time the client connects it will want to request all changes that may have happenned to the bucket will the client was disconnected. The client will send:
+For example, the client may have stored an index locally that was received with change version `abc123`. The next time the client connects it will want to request all changes that may have happenned to the bucket while the client was disconnected. The client will send:
 
     0:cv:abc123
 
