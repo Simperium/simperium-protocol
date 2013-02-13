@@ -19,7 +19,7 @@ Simperium offers a streaming API that is accessible over a [Websocket][] or [Soc
     1. [Authorization](#authorization)
     - [First Sync](#firstsync)
     - [Requesting entities](#requestingentities)
-    - [Connecting with Existing Local Data](#connectingwithexistinglocaldata)
+    - [Connecting with Existing Index](#connectingwithexistingindex)
     - [Receiving Remote Changes](#receivingremotechanges)
     - [Sending Local Changes](#sendinglocalchanges)
 
@@ -233,7 +233,7 @@ The entity's data is stored in the `data` key of the JSON payload. The client sh
 
 After storing all of the entities from an index request the client will have a synced copy of the bucket and can now start sending and apply changes.
 
-### Connecting with Existing Local Data
+### Connecting with Existing Index
 
 After sending an `init` message, if a client already has local index data stored for a bucket it should send a [`cv` Change Version](#indexchangeversioncv) message instead of an `i` message. Downloading an entire index of data would be wasteful.
 
