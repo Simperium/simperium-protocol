@@ -7,21 +7,21 @@ Simperium offers a streaming API that is accessible over a [Websocket][] or [Soc
 
 ## Contents
 
-1. [Definitions of Terms](#definitionsofterms)
+1. [Definitions of Terms](#definitions-of-terms)
 2. [Connecting and Messages](#connecting)
-3. [Streaming API](#streamingapi)
-    1. [init (authorizing)](#authorizinginit)
-    - [i (index)](#indexi)
-    - [e (entity)](#entitye)
-    - [cv (change version)](#indexchangeversioncv)
-    - [c (changes)](#changec)
-4. [Syncing Bucket Entities](#syncingbucketentities)
+3. [Streaming API](#streaming-api)
+    1. [init (authorizing)](#authorizing-init)
+    - [i (index)](#index-i)
+    - [e (entity)](#entity-e)
+    - [cv (change version)](#index-change-version-cv)
+    - [c (changes)](#change-c)
+4. [Syncing Bucket Entities](#syncing-bucket-entities)
     1. [Authorization](#authorization)
-    - [First Sync](#firstsync)
-    - [Requesting entities](#requestingentities)
-    - [Connecting with Existing Index](#connectingwithexistingindex)
-    - [Receiving Remote Changes](#receivingremotechanges)
-    - [Sending Local Changes](#sendinglocalchanges)
+    - [First Sync](#first-sync)
+    - [Requesting entities](#requesting-entities)
+    - [Connecting with Existing Index](#connecting-with-existing-index)
+    - [Receiving Remote Changes](#receiving-remote-changes)
+    - [Sending Local Changes](#sending-local-changes)
 
 
 ## Definitions of Terms
