@@ -161,7 +161,7 @@ Possible operations `o`:
 - **M** : *modify* -- the operation is a modification to an entity
 - **-** : *remove* -- remove the entity from the index
 
-For modify operations the `v` or *value* key will contain an object diff compatible with [jsondiff][].
+For modify operations the `v` key will contain an object diff compatible with [jsondiff][].
 
 [jsondiff]: https://github.com/simperium/jsondiff
 
