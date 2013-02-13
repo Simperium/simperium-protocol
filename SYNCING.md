@@ -8,7 +8,7 @@ Simperium offers a streaming API that is accessible over a [Websocket][] or [Soc
 ## Contents
 
 1. [Definitions of Terms](#definitions-of-terms)
-2. [Connecting and Messages](#connecting)
+2. [Connecting](#connecting)
 3. [Streaming API](#streaming-api)
     1. [init (authorizing)](#authorizing-init)
     - [i (index)](#index-i)
