@@ -145,7 +145,7 @@ If the change version is up to date the server will respond with an empty `c` me
 
 ### Change: c
 
-To communicate changes to the bucket index clients and servers should send and respond to change messages: `c`. A change messages contains a JSON payload which is an array of hashes that describe each change version to be applied to the index in order to bring it to a current state.
+To communicate changes to the bucket index clients and servers should send and respond to change messages: `c`. A change message contains a JSON payload which is an array of hashes that describe each change version to be applied to the index in order to bring it to a current state.
 
 A change has these keys:
 
