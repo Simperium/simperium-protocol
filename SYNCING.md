@@ -263,11 +263,12 @@ To apply these changes a client will want to loop through each change and perfor
       - If it doesn't match request change versions? `cv:CURRENT_VERSION`
   2. Get the local entity using `change.id` as the key
       - If client doesn't have the entity request it? `e:%change.cv%.%change.ev%`
-  3. Confirm that the local entity version matches the `change.ev`
+  3. Confirm that the local entity version matches the `change.sv`
       - If they don't match request the entity? `e:%change.cv:%change.ev%`
   4. Apply the change:
       - If `change.o` is `-` remove the entity from the local store
       - If `change.o` is `M` apply `change.v` using [jsondiff][]
+      - Set the entity's version to `change.ev`
   5. Save the `change.cv` for the index
   
 ### Sending Local Changes
