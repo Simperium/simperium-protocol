@@ -65,7 +65,7 @@ When a client is ready to connet to a user's bucket it sends the `init` command.
 
 Optionally, the init request can contain a command to be ran upon initialization:
 
-- **cmd** : the command to run after authorizing the channel: Example: **i::::500**
+- **cmd** : the command to executed after authorizing the channel: Example: **i::::500**
 
 An example `init` command with a channel prefix `0`:
 
