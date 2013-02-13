@@ -104,7 +104,7 @@ The JSON payload contains these keys:
 - **index** : an array of hashes that contain:
   - **id** : the entity's unique key name
   - **v** : the entity's version number
-- **mark** : a cursor to be used in another **i:** request to fetch the next page of indexes for the bucket
+- **mark** : a cursor to be used in another **i:** request to fetch the next page of indexes for the bucket. **Note:** only present if there is more data to fetch from the index.
 
 ### Entity: e
 
