@@ -39,7 +39,7 @@ This assumes the client is starting with an empty **index**.
 
 ## Connecting
 
-The client connects via websocket to `wss://api.simperium.com/sock/websocket`. Commands are sent over the websocket and can be prefixed with an integer which allows commands to be namespaced to a specific *channel* of communication to allow multiple bucketes to be synced over the same socket connection.
+The client connects via websocket to `wss://api.simperium.com/sock/websocket`. Commands are sent over the websocket and can be prefixed with an integer which allows commands to be namespaced to a specific *channel* of communication to allow multiple buckets to be synced over the same socket connection.
 
 ## Streaming API
 
