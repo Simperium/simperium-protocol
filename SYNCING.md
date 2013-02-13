@@ -194,13 +194,13 @@ The client should then wait for an `auth` response:
 
     0:auth:user@example.com
 
-After a successful response the client should perform it's first sync.
+After a successful response the client should perform its first sync.
 
 [simperium-auth]:https://simperium.com/docs/reference/http/#auth
 
 ### First Sync
 
-Upon first connection to a bucket (e.g. the client has no data in it's local index) a client will need to request the current index from the server and sync each of the entities. The client can request the index using the [`i` "index"](#indexi) command providing a limit for the page size.
+Upon first connection to a bucket (e.g. the client has no data in its local index) a client will need to request the current index from the server and sync each of the entities. The client can request the index using the [`i` "index"](#indexi) command providing a limit for the page size.
 
 Sending this message will request the bucket's latest index 100 items at a time:
 
