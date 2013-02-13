@@ -1,14 +1,36 @@
-# Syncing
+# Simperium Streaming API
 
-How to sync.
+Simperium offers a streaming API that is accessible over a [Websocket][] or [SockJS][]. This document describes the messages a client can send and receive as well as how to implement syncing for a client.
 
-## Definitions
+[SockJS]: https://github.com/sockjs/sockjs-client
+[Websocket]: http://www.websocket.org
+
+## Contents
+
+1. [Definitions of Terms](#definitionsofterms)
+2. [Connecting and Messages](#connecting)
+3. [Streaming API](#streamingapi)
+    1. [init (authorizing)](#authorizinginit)
+    - [i (index)](#indexi)
+    - [e (entity)](#entitye)
+    - [cv (change version)](#indexchangeversioncv)
+    - [c (changes)](#changec)
+4. [Syncing Bucket Entities](#syncingbucketentities)
+    1. [Authorization](#authorization)
+    - [First Sync](#firstsync)
+    - [Requesting entities](#requestingentities)
+    - [Connecting with Existing Local Data](#connectingwithexistinglocaldata)
+    - [Receiving Remote Changes](#receivingremotechanges)
+    - [Sending Local Changes](#sendinglocalchanges)
+
+
+## Definitions of Terms
 
 
 - **bucket** : a namespace for storing one an **entity**
 - **entity** : a JSON serializable object that is stored in a **bucket**
 - **index** : an array of hashes that contain an **entity**'s `key` and `v` (version)
-- **cv** : An **index**'s last change version in an alphanumeric string: `7u37290aaddfkk`
+- **cv** : An **index**'s last **change version** in an alphanumeric string: `7u37290aaddfkk`
 - **ccid** : An unique identifier for a specific change operation used in the `c` or [*command* message](#changec).
 
 This assumes the client is starting with an empty **index**.
@@ -16,6 +38,18 @@ This assumes the client is starting with an empty **index**.
 ## Connecting
 
 The client connects via websocket to `wss://api.simperium.com/sock/websocket`. Commands are sent over the websocket and can be prefixed with an integer which allows commands to be namespaced to a specific *channel* of communication to allow multiple bucketes to be synced over the same socket connection.
+
+## Streaming API
+
+After connecting a client can send various commands to retrieve a bucket's entities and changes to facilitate syncing a local representation of a bucket with the one that exists on the server.
+
+The available commands are:
+
+- [init](#authorizinginit) - authorizes a connection to a bucket
+- [i](#indexi) - requests an index of a bucket
+- [e](#entitye) - requests an entity's data for specified version
+- [cv](#indexchangeversioncv) - requests changes since a given index change version
+- [c](#changec) - send or receive a set of changes to perform on a bucket's entities
 
 ### Authorizing: init
 
@@ -127,3 +161,114 @@ Possible operations `o`:
 For modify operations the `v` or *value* key will contain an object diff compatible with [jsondiff][].
 
 [jsondiff]: https://github.com/simperium/jsondiff
+
+### Heartbeat: h
+
+To keep a connection alive the client should send a heartbeat message while the connection is idle. This message *should not* be prefixed by a channel id since the heartbeat will maintain the connection for all channels.
+
+The message takes on paremeter, an integer that is incremented by the server and then sent back. Client sends:
+
+    h:0
+
+Server responds with:
+
+    h:1
+
+A heartbeat should be sent after 20 seconds of idle time and should expect an immediate response.
+
+
+## Syncing Bucket Entities
+
+A client needs to perform a specific set of operations to successfully keep its index synced with the remote version. We're assuming messages are sent over a channel with the prefix `0` and that the client is starting with an empty index.
+
+### Authorization
+
+To authorize access to a bucket the client will first need to obtain a user's access token using the [auth api][simperium-auth]. The client can then send an [`init`](#authorizinginit) command over the connection:
+
+    0:init:{"name":"mybucket" ... }
+    
+The client should then wait for an `auth` response:
+
+    0:auth:user@example.com
+
+After a successful response the client should perform it's first sync.
+
+[simperium-auth]:https://simperium.com/docs/reference/http/#auth
+
+### First Sync
+
+Upon first connection to a bucket (e.g. the client has no data in it's local index) a client will need to request the current index from the server and sync each of the entities. The client can request the index using the [`i` "index"](#indexi) command providing a limit for the page size.
+
+Sending this message will request the bucket's latest index 100 items at a time:
+
+    0:i::::100
+
+The server will respond with an `i` message containing the JSON payload that represents a page of entity keys and versions:
+
+    0:i:{"current": "5119dafb37a401031d47c0f7", "index": [{"id": "one", "v": 2}, ... ], "mark": "5119450b37a401031d3bfdb9"}
+
+If there are more entities than fit in this page the server will send a cursor under the key `mark` that the client can use to request the next page. This command will request the next page of indexes from the server
+
+    0:i::5119450b37a401031d3bfdb9::100
+
+The client will know when it has received the entire index when it receives an `i` message without a `mark`.
+
+After receiving a set of index data a client can begin requesting entity data from the server by requesting each `id.v` in the `index` key from the server. The client will want to store which `cv` they are syncing (the value under `current` in an `i` message).
+
+### Requesting Entities
+
+For each object in the `index` array of a `i` message, the client can request the entity's data using the [`e` "entity"](#entitye). For example, this message asks the server to send `version` 2 of the entity stored at the key `qwerty`:
+
+    0:i:qwerty.2
+    
+If the server has this entity and version it will respond with:
+
+    0:i:qwerty.2
+    {"data":{"message":"hello world"}}
+
+The entity's data is stored in the `data` key of the JSON payload. The client should store both the data and the version locally so it can request changes for the entity in the future.
+
+After storing all of the entities from an index request the client will have a synced copy of the bucket and can now start sending and apply changes.
+
+### Connecting with Existing Local Data
+
+After sending an `init` message, if a client already has local index data stored for a bucket it should send a [`cv` Change Version](#indexchangeversioncv) message instead of an `i` message. Downloading an entire index of data would be wasteful.
+
+The client should have stored the current *change version* for the index so it can ask the server for all changes since that version in order to catch up.
+
+    0:cv:5119dafb37a401031d47c0f7
+    
+If the server knows about this change version for the connected bucket it will respond with the changes necessary to transform the local index to match the remote one:
+
+    0:c:[{"clientid": "sjs-2012121301-9af05b4e9a95132f614c", "id": "newobject", "o": "M", "v": {"new": {"o": "+", "v": "object"}}, "ev": 1, "cv": "511aa58737a401031d57db90", "ccids": ["3a5cbd2f0a71fca4933fff5a54d22b60"]}]
+
+If the server doesn't have the requested *change version* it will send this `c` message:
+
+    0:c:?
+
+At which point the client will need to [reload the index](#requestingentities) because its local data did not come from this bucket.
+
+### Receiving Remote Changes
+
+A client will receive remote changes from the server either by explicitly asking for them ([using the `cv`](#indexchangeversioncv)) or simply by being connected when a server receives a [`c` change](#changec) command. A remote change message will contain a JSON payload that is an array of changes and information about those changes (corresponding `ccid`s and an index `cv` for the changes). An example incoming `c` message representing a single change:
+
+    0:c:[{"clientid": "sjs-2012121301-9af05b4e9a95132f614c", "id": "newobject", "o": "M", "v": {"new": {"o": "+", "v": "object"}}, "ev": 1, "cv": "511aa58737a401031d57db90", "ccids": ["3a5cbd2f0a71fca4933fff5a54d22b60"]}]
+
+To apply these changes a client will want to loop through each change and perform the operation described in the change object:
+
+  1. Confirm the `change.cv` matches the local index's *change version*
+      - If it doesn't match request change versions? `cv:CURRENT_VERSION`
+  2. Get the local entity using `change.id` as the key
+      - If client doesn't have the entity request it? `e:%change.cv%.%change.ev%`
+  3. Confirm that the local entity version matches the `change.ev`
+      - If they don't match request the entity? `e:%change.cv:%change.ev%`
+  4. Apply the change:
+      - If `change.o` is `-` remove the entity from the local store
+      - If `change.o` is `M` apply `change.v` using [jsondiff][]
+  5. Save the `change.cv` for the index
+  
+### Sending Local Changes
+
+TODO: Write this
+- diffing
+- acknowledging changes
