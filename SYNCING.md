@@ -169,7 +169,7 @@ For modify operations the `v` key will contain an object diff compatible with [j
 
 To keep a connection alive the client should send a heartbeat message while the connection is idle. This message *should not* be prefixed by a channel id since the heartbeat will maintain the connection for all channels.
 
-The message takes on paremeter, an integer that is incremented by the server and then sent back. Client sends:
+The message takes one parameter, an integer that is incremented by the server and then sent back. Client sends:
 
     h:0
 
@@ -177,8 +177,7 @@ Server responds with:
 
     h:1
 
-A heartbeat should be sent after 20 seconds of idle time and should expect an immediate response.
-
+The client's next heartbeat message should increment the integer it received from the server. A heartbeat should be sent after 20 seconds of idle time and should expect an immediate response.
 
 ## Syncing Bucket Entities
 
