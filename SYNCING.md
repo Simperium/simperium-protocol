@@ -248,7 +248,7 @@ If the server doesn't have the requested *change version* it will send this `c` 
 
     0:c:?
 
-At which point the client will need to [reload the index](#requestingentities) because its local data did not come from this bucket.
+At which point the client will need to [reload the index](#requestingentities). To save space the server starts aggregating older change versions so a single change version is not permanently stored forever.
 
 ### Receiving Remote Changes
 
