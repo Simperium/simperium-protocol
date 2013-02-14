@@ -15,6 +15,7 @@ Simperium offers a streaming API that is accessible over a [Websocket][] or [Soc
     - [e (entity)](#entity-e)
     - [cv (change version)](#index-change-version-cv)
     - [c (changes)](#change-c)
+    - [h (heartbeat)](#heartbeat-h)
 4. [Syncing Bucket Entities](#syncing-bucket-entities)
     1. [Authorization](#authorization)
     - [First Sync](#first-sync)
@@ -52,7 +53,7 @@ The available commands are:
 - [e](#entitye) - requests an entity's data for specified version
 - [cv](#indexchangeversioncv) - requests changes since a given index change version
 - [c](#changec) - send or receive a set of changes to perform on a bucket's entities
-
+- [h](#heartbeat-h) - send and receive a heartbeat to maintain idle connection
 ### Authorizing: init
 
 When a client is ready to connet to a user's bucket it sends the `init` command. The init command contains a JSON payload with the following key value pairs: 
