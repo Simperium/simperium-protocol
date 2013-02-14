@@ -33,7 +33,7 @@ Simperium offers a streaming API that is accessible over a [Websocket][] or [Soc
 - **index** : an array of hashes that contain an **entity**'s `key` and `v` (version)
 - **cv** : An **index**'s last **change version** in an alphanumeric string: `7u37290aaddfkk`
 - **ev** : An **e**nd **v**ersion of an entity in a [change operation `c`](#changec)
-- **sv** : The **s**ource **v**ersion (the version the change applies to) of an entity in a [change operation `c`](#changec)
+- **sv** : The **s**ource **v**ersion (the version the change applies to) of an entity in a [change operation `c`](#changec).
 - **ccid** : An unique identifier for a specific change operation used in the `c` or [*command* message](#changec).
 
 This assumes the client is starting with an empty **index**.
@@ -48,12 +48,13 @@ After connecting a client can send various commands to retrieve a bucket's entit
 
 The available commands are:
 
-- [init](#authorizinginit) - authorizes a connection to a bucket
-- [i](#indexi) - requests an index of a bucket
-- [e](#entitye) - requests an entity's data for specified version
-- [cv](#indexchangeversioncv) - requests changes since a given index change version
-- [c](#changec) - send or receive a set of changes to perform on a bucket's entities
+- [init](#authorizing-init) - authorizes a connection to a bucket
+- [i](#index-i) - requests an index of a bucket
+- [e](#entity-e) - requests an entity's data for specified version
+- [cv](#indexchangeversion-cv) - requests changes since a given index change version
+- [c](#change-c) - send or receive a set of changes to perform on a bucket's entities
 - [h](#heartbeat-h) - send and receive a heartbeat to maintain idle connection
+
 ### Authorizing: init
 
 When a client is ready to connet to a user's bucket it sends the `init` command. The init command contains a JSON payload with the following key value pairs: 
@@ -153,10 +154,12 @@ A change has these keys:
 - **clientid** : the client that originally made the change
 - **cv** : the change version of the index at the point of this change
 - **ev** : the **e**nd **v**ersion for the entity after the change is applied
-- **sv** : the **s**ource **v**ersion for the entity the change applies to
+- **sv** : the **s**ource **v**ersion for the entity the change applies to. **Note:** not sent for new objects.
 - **id** : the key of the entity this change applies to
 - **o** : the type of operaton to perform
 - **v** : the values to use for the operation
+
+`change.ev` minus `change.sv` will usually be `1` but is not always the case.
 
 Possible operations `o`:
 - **M** : *modify* -- the operation is a modification to an entity
@@ -200,7 +203,7 @@ After a successful response the client should perform its first sync.
 
 ### First Sync
 
-Upon first connection to a bucket (e.g. the client has no data in its local index) a client will need to request the current index from the server and sync each of the entities. The client can request the index using the [`i` "index"](#indexi) command providing a limit for the page size.
+Upon first connection to a bucket (e.g. the client has no data in its local index) a client will need to request the current index from the server and sync each of the entities. The client can request the index using the [`i` "index"](#index-i) command providing a limit for the page size.
 
 Sending this message will request the bucket's latest index 100 items at a time:
 
@@ -220,7 +223,7 @@ After receiving a set of index data a client can begin requesting entity data fr
 
 ### Requesting Entities
 
-For each object in the `index` array of a `i` message, the client can request the entity's data using the [`e` "entity"](#entitye). For example, this message asks the server to send `version` 2 of the entity stored at the key `qwerty`:
+For each object in the `index` array of a `i` message, the client can request the entity's data using the [`e` "entity"](#entity-e). For example, this message asks the server to send `version` 2 of the entity stored at the key `qwerty`:
 
     0:i:qwerty.2
     
@@ -235,7 +238,7 @@ After storing all of the entities from an index request the client will have a s
 
 ### Connecting with Existing Index
 
-After sending an `init` message, if a client already has local index data stored for a bucket it should send a [`cv` Change Version](#indexchangeversioncv) message instead of an `i` message. Downloading an entire index of data would be wasteful.
+After sending an `init` message, if a client already has local index data stored for a bucket it should send a [`cv` Change Version](#index-change-version-cv) message instead of an `i` message. Downloading an entire index of data would be wasteful.
 
 The client should have stored the current *change version* for the index so it can ask the server for all changes since that version in order to catch up.
 
@@ -249,11 +252,11 @@ If the server doesn't have the requested *change version* it will send this `c` 
 
     0:c:?
 
-At which point the client will need to [reload the index](#requestingentities). To save space the server starts aggregating older change versions so a single change version is not permanently stored forever.
+At which point the client will need to [reload the index](#requesting-entities). To save space the server starts aggregating older change versions so a single change version is not permanently stored forever.
 
 ### Receiving Remote Changes
 
-A client will receive remote changes from the server either by explicitly asking for them ([using the `cv`](#indexchangeversioncv)) or simply by being connected when a server receives a [`c` change](#changec) command. A remote change message will contain a JSON payload that is an array of changes and information about those changes (corresponding `ccid`s and an index `cv` for the changes). An example incoming `c` message representing a single change:
+A client will receive remote changes from the server either by explicitly asking for them ([using the `cv`](#index-change-version-cv)) or simply by being connected when a server receives a [`c` change](#change-c) command. A remote change message will contain a JSON payload that is an array of changes and information about those changes (corresponding `ccid`s and an index `cv` for the changes). An example incoming `c` message representing a single change:
 
     0:c:[{"clientid": "sjs-2012121301-9af05b4e9a95132f614c", "id": "newobject", "o": "M", "v": {"new": {"o": "+", "v": "object"}}, "ev": 1, "cv": "511aa58737a401031d57db90", "ccids": ["3a5cbd2f0a71fca4933fff5a54d22b60"]}]
 
