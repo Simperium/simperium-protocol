@@ -32,7 +32,7 @@ Simperium offers a streaming API that is accessible over a [Websocket][] or [Soc
 - **index** : an array of hashes that contain an **entity**'s `key` and `v` (version)
 - **cv** : An **index**'s last **change version** in an alphanumeric string: `7u37290aaddfkk`
 - **ev** : An **e**nd **v**ersion of an entity in a [change operation `c`](#changec)
-- **sv** : The **s**ource **v**ersion (the version the change applies to) of an entity in a [change operation `c`](#changec)
+- **sv** : The **s**ource **v**ersion (the version the change applies to) of an entity in a [change operation `c`](#changec).
 - **ccid** : An unique identifier for a specific change operation used in the `c` or [*command* message](#changec).
 
 This assumes the client is starting with an empty **index**.
@@ -152,10 +152,12 @@ A change has these keys:
 - **clientid** : the client that originally made the change
 - **cv** : the change version of the index at the point of this change
 - **ev** : the **e**nd **v**ersion for the entity after the change is applied
-- **sv** : the **s**ource **v**ersion for the entity the change applies to
+- **sv** : the **s**ource **v**ersion for the entity the change applies to. **Note:** not sent for new objects.
 - **id** : the key of the entity this change applies to
 - **o** : the type of operaton to perform
 - **v** : the values to use for the operation
+
+`change.ev` minus `change.sv` will usually be `1` but is not always the case.
 
 Possible operations `o`:
 - **M** : *modify* -- the operation is a modification to an entity
