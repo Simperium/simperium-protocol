@@ -47,11 +47,11 @@ After connecting a client can send various commands to retrieve a bucket's entit
 
 The available commands are:
 
-- [init](#authorizinginit) - authorizes a connection to a bucket
-- [i](#indexi) - requests an index of a bucket
-- [e](#entitye) - requests an entity's data for specified version
-- [cv](#indexchangeversioncv) - requests changes since a given index change version
-- [c](#changec) - send or receive a set of changes to perform on a bucket's entities
+- [init](#authorizing-init) - authorizes a connection to a bucket
+- [i](#index-i) - requests an index of a bucket
+- [e](#entity-e) - requests an entity's data for specified version
+- [cv](#indexchangeversion-cv) - requests changes since a given index change version
+- [c](#change-c) - send or receive a set of changes to perform on a bucket's entities
 
 ### Authorizing: init
 
