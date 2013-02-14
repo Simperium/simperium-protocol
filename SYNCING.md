@@ -201,7 +201,7 @@ After a successful response the client should perform its first sync.
 
 ### First Sync
 
-Upon first connection to a bucket (e.g. the client has no data in its local index) a client will need to request the current index from the server and sync each of the entities. The client can request the index using the [`i` "index"](#indexi) command providing a limit for the page size.
+Upon first connection to a bucket (e.g. the client has no data in its local index) a client will need to request the current index from the server and sync each of the entities. The client can request the index using the [`i` "index"](#index-i) command providing a limit for the page size.
 
 Sending this message will request the bucket's latest index 100 items at a time:
 
@@ -221,7 +221,7 @@ After receiving a set of index data a client can begin requesting entity data fr
 
 ### Requesting Entities
 
-For each object in the `index` array of a `i` message, the client can request the entity's data using the [`e` "entity"](#entitye). For example, this message asks the server to send `version` 2 of the entity stored at the key `qwerty`:
+For each object in the `index` array of a `i` message, the client can request the entity's data using the [`e` "entity"](#entity-e). For example, this message asks the server to send `version` 2 of the entity stored at the key `qwerty`:
 
     0:i:qwerty.2
     
@@ -236,7 +236,7 @@ After storing all of the entities from an index request the client will have a s
 
 ### Connecting with Existing Index
 
-After sending an `init` message, if a client already has local index data stored for a bucket it should send a [`cv` Change Version](#indexchangeversioncv) message instead of an `i` message. Downloading an entire index of data would be wasteful.
+After sending an `init` message, if a client already has local index data stored for a bucket it should send a [`cv` Change Version](#index-change-version-cv) message instead of an `i` message. Downloading an entire index of data would be wasteful.
 
 The client should have stored the current *change version* for the index so it can ask the server for all changes since that version in order to catch up.
 
@@ -250,11 +250,11 @@ If the server doesn't have the requested *change version* it will send this `c` 
 
     0:c:?
 
-At which point the client will need to [reload the index](#requestingentities) because its local data did not come from this bucket.
+At which point the client will need to [reload the index](#requesting-entities) because its local data did not come from this bucket.
 
 ### Receiving Remote Changes
 
-A client will receive remote changes from the server either by explicitly asking for them ([using the `cv`](#indexchangeversioncv)) or simply by being connected when a server receives a [`c` change](#changec) command. A remote change message will contain a JSON payload that is an array of changes and information about those changes (corresponding `ccid`s and an index `cv` for the changes). An example incoming `c` message representing a single change:
+A client will receive remote changes from the server either by explicitly asking for them ([using the `cv`](#index-change-version-cv)) or simply by being connected when a server receives a [`c` change](#change-c) command. A remote change message will contain a JSON payload that is an array of changes and information about those changes (corresponding `ccid`s and an index `cv` for the changes). An example incoming `c` message representing a single change:
 
     0:c:[{"clientid": "sjs-2012121301-9af05b4e9a95132f614c", "id": "newobject", "o": "M", "v": {"new": {"o": "+", "v": "object"}}, "ev": 1, "cv": "511aa58737a401031d57db90", "ccids": ["3a5cbd2f0a71fca4933fff5a54d22b60"]}]
 
