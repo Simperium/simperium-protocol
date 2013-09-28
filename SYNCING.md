@@ -16,10 +16,10 @@ Simperium offers a streaming API that is accessible over a [Websocket][] or [Soc
     - [cv (change version)](#index-change-version-cv)
     - [c (changes)](#change-c)
     - [h (heartbeat)](#heartbeat-h)
-4. [Syncing Bucket Entities](#syncing-bucket-entities)
+4. [Syncing Bucket Objects](#syncing-bucket-objects)
     1. [Authorization](#authorization)
     - [First Sync](#first-sync)
-    - [Requesting entities](#requesting-entities)
+    - [Requesting objects](#requesting-objects)
     - [Connecting with Existing Index](#connecting-with-existing-index)
     - [Receiving Remote Changes](#receiving-remote-changes)
     - [Sending Local Changes](#sending-local-changes)
@@ -52,7 +52,7 @@ The available commands are:
 - [i](#index-i) - requests an index of a bucket
 - [e](#entity-e) - requests an entity's data for specified version
 - [cv](#indexchangeversion-cv) - requests changes since a given index change version
-- [c](#change-c) - send or receive a set of changes to perform on a bucket's entities
+- [c](#change-c) - send or receive a set of changes to perform on a bucket's objects
 - [h](#heartbeat-h) - send and receive a heartbeat to maintain idle connection
 
 ### Authorizing: init
@@ -89,7 +89,7 @@ After authorizing the client can now issue commands for the initialized bucket.
 
 ### Index: i
 
-The index command -- `i` -- allows the client to receive all of the keys and corresponding version numbers for the entities stored in the bucket. The index command takes two parameters sperated by double colons `::`:
+The index command -- `i` -- allows the client to receive all of the keys and corresponding version numbers for the objects stored in the bucket. The index command takes two parameters sperated by double colons `::`:
 
 - **mark** : *optional* a cursor that indicates where in the index you are requesting
 - **limit** : the maximum number of items to return (optional? is there a default on the server side?)
@@ -185,7 +185,7 @@ Server responds with:
 
 The client's next heartbeat message should increment the integer it received from the server. A heartbeat should be sent after 20 seconds of idle time and should expect an immediate response.
 
-## Syncing Bucket Entities
+## Syncing Bucket Objects
 
 A client needs to perform a specific set of operations to successfully keep its index synced with the remote version. We're assuming messages are sent over a channel with the prefix `0` and that the client is starting with an empty index.
 
@@ -205,7 +205,7 @@ After a successful response the client should perform its first sync.
 
 ### First Sync
 
-Upon first connection to a bucket (e.g. the client has no data in its local index) a client will need to request the current index from the server and sync each of the entities. The client can request the index using the [`i` "index"](#index-i) command providing a limit for the page size.
+Upon first connection to a bucket (e.g. the client has no data in its local index) a client will need to request the current index from the server and sync each of the objects. The client can request the index using the [`i` "index"](#index-i) command providing a limit for the page size.
 
 Sending this message will request the bucket's latest index 100 items at a time:
 
@@ -215,7 +215,7 @@ The server will respond with an `i` message containing the JSON payload that rep
 
     0:i:{"current": "5119dafb37a401031d47c0f7", "index": [{"id": "one", "v": 2}, ... ], "mark": "5119450b37a401031d3bfdb9"}
 
-If there are more entities than fit in this page the server will send a cursor under the key `mark` that the client can use to request the next page. This command will request the next page of indexes from the server
+If there are more objects than fit in this page the server will send a cursor under the key `mark` that the client can use to request the next page. This command will request the next page of indexes from the server
 
     0:i::5119450b37a401031d3bfdb9::100
 
@@ -223,7 +223,7 @@ The client will know when it has received the entire index when it receives an `
 
 After receiving a set of index data a client can begin requesting entity data from the server by requesting each `id.v` in the `index` key from the server. The client will want to store which `cv` they are syncing (the value under `current` in an `i` message).
 
-### Requesting Entities
+### Requesting Objects
 
 For each object in the `index` array of a `i` message, the client can request the entity's data using the [`e` "entity"](#entity-e). For example, this message asks the server to send `version` 2 of the entity stored at the key `qwerty`:
 
@@ -236,7 +236,7 @@ If the server has this entity and version it will respond with:
 
 The entity's data is stored in the `data` key of the JSON payload. The client should store both the data and the version locally so it can request changes for the entity in the future.
 
-After storing all of the entities from an index request the client will have a synced copy of the bucket and can now start sending and apply changes.
+After storing all of the objects from an index request the client will have a synced copy of the bucket and can now start sending and apply changes.
 
 ### Connecting with Existing Index
 
@@ -254,7 +254,7 @@ If the server doesn't have the requested *change version* it will send this `c` 
 
     0:c:?
 
-At which point the client will need to [reload the index](#requesting-entities). To save space the server starts aggregating older change versions so a single change version is not permanently stored forever.
+At which point the client will need to [reload the index](#requesting-objects). To save space the server starts aggregating older change versions so a single change version is not permanently stored forever.
 
 ### Receiving Remote Changes
 
