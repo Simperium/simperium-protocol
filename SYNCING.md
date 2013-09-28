@@ -40,11 +40,11 @@ This assumes the client is starting with an empty **index**.
 
 ## Connecting
 
-The client connects via websocket to `wss://api.simperium.com/sock/websocket`. Commands are sent over the websocket and can be prefixed with an integer which allows commands to be namespaced to a specific *channel* of communication to allow multiple buckets to be synced over the same socket connection.
+The client connects via websocket to `wss://api.simperium.com/sock/1/APP_ID/websocket` where `APP_ID` is replaced with the Simperium application id. Commands are sent over the websocket and can be prefixed with an integer which allows commands to be namespaced to a specific *channel* of communication to allow multiple buckets to be synced over the same socket connection.
 
 ## Streaming API
 
-After connecting a client can send various commands to retrieve a bucket's entities and changes to facilitate syncing a local representation of a bucket with the one that exists on the server.
+After connecting a client can send various commands to retrieve a bucket's objects and changes to facilitate syncing a local representation of a bucket with the one that exists on the server.
 
 The available commands are:
 
@@ -64,8 +64,10 @@ When a client is ready to connet to a user's bucket it sends the `init` command.
 - **token** : a user's access token obtained via the auth api.
 - **app_id** : a simperium app id. Example: **abusers-headset-123**
 - **name** : the name of the bucket to use. Example: **notes**
+- **library** : the library name of the connecting client: **simperium-android**
+- **version** : the version of the connecting client library: **1.0**
 
-Optionally, the init request can contain a command to be ran upon initialization:
+Optionally, the init request can contain a command to be executed upon initialization:
 
 - **cmd** : the command to executed after authorizing the channel: Example: **i::::500**
 
