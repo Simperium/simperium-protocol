@@ -160,6 +160,7 @@ A change has these keys:
 - **id** : the key of the entity this change applies to
 - **o** : the type of operaton to perform
 - **v** : the values to use for the operation
+- **ccid** : a unique uuid to identify this specific change
 
 `change.ev` minus `change.sv` will usually be `1` but is not always the case.
 
@@ -278,6 +279,17 @@ To apply these changes a client will want to loop through each change and perfor
   
 ### Sending Local Changes
 
-TODO: Write this
-- diffing
-- acknowledging changes
+When the client is ready to update an object's representation in the remote datastore it needs to generate the diff and write a [`c` command to the server](#change-c).
+
+After sending the change, the client should flag the change as sent but not yet "acknowledged" until it receives a `c` response from the server containing the `ccid` that was sent. If the change was successful the client can consider the local representation as up to date.
+
+In some cases the server will respond with a error response if it could not apply the change. An example error response:
+
+    c:[{"clientid":"offending-client","id":"object-key","error":"401","ccids":["abcdef123456"]}]
+
+Potentially error responses:
+
+- **400** : invalid change - change request did not conform to required fields
+- **404** : not found - object key or key version not found
+- **409** : data conflict - overwrite didn't match original data
+- **412** : change was empty
