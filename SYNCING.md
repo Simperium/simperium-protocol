@@ -289,7 +289,7 @@ In some cases the server will respond with a error response if it could not appl
 
 #### Error Responses
 
-Potentially error responses:
+Potential error responses:
 
 - **400** : invalid id or invalid schema - change request did not conform to required fields
 - **401** : invalid permission
