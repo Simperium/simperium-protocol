@@ -161,6 +161,7 @@ A change has these keys:
 - **o** : the type of operaton to perform
 - **v** : the values to use for the operation
 - **ccid** : a unique uuid to identify this specific change
+- **d** : **Optional** the whole data object, see error cases **440**, **405** where this might be necessary
 
 `change.ev` minus `change.sv` will usually be `1` but is not always the case.
 
@@ -276,7 +277,24 @@ To apply these changes a client will want to loop through each change and perfor
       - If `change.o` is `M` apply `change.v` using [jsondiff][]
       - Set the entity's version to `change.ev`
   5. Save the `change.cv` for the index
-  
+
+#### Error cases for receiving changes
+
+- Applying the change:
+  If the client cannot apply the change, it needs to re-load the object
+
+- Change for missing entity:
+  If a change is received referencing an entity that doesn't exist locally (and the change isn't creating the entity), client needs to re-load the object
+
+#### Reloading an object
+
+In some cases the client needs to reload an object, when it does so it should do the following:
+
+  1. Issue a [`e` "entity"](#entity-e) command
+  2. Upon receipt of the object, check if there are local client modifications
+  3. If there are no local modifications, update the local index
+  4. If there are local modifications, a local transform of the modifications vs the diff between the existing local index version of the object and the just downloaded version.
+
 ### Sending Local Changes
 
 When the client is ready to update an object's representation in the remote datastore it needs to generate the diff and write a [`c` command to the server](#change-c).
@@ -298,4 +316,30 @@ Potential error responses:
 - **409** : duplicate change
 - **412** : empty change
 - **413** : document too large
-- **440** : invalid diff (wrong key, bad delta)
+- **440** : invalid diff (wrong key, bad delta), invalid schema
+- **5xx** : internal server error
+
+Handling Errors:
+
+**400** : If it was an invalid id, changing the id could make the call succeed. If it was a schema violation, then correction will depend on the schema. If client cannot tell, then do not re-send since unless something changes, 400 will be sent every time.
+
+**401** : Grab a new authentication token (or possible you just don't have access to that document).
+
+**404** : Client is referencing an object that does not exist on server. If client is insistent, then changing the diff such that it is creating the object instead should make this succeed.
+
+**405** : Bad version, client referencing a wrong or missing `sv`. This is a potential data loss scenario: server may not have enough history to resolve conflicts. Client has two options:
+  - re-load the entity (via `e` command) then overwrite the local changes
+  - send a change with full object (which will overwrite remote changes, history will still be available) referencing the current `sv`
+    
+**409** : Duplicate change, client can safely throw away the change it is attempting to send 
+
+**412** : Empty change, nothing was changed on the server, client can ignore (and stop sending change).
+
+**413** : Nothing to do except reduce the size of the object
+
+**440** : Server could not apply diff, resend the change with additional parameter `d` that contains the whole JSON data object. Current known scenarios where this could happen:
+  - Client generated an invalid diff (some old versions of iOS library)
+  - Client is sending string diffs and using a different encoding than server
+    
+
+
