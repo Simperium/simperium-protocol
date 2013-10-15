@@ -287,6 +287,8 @@ In some cases the server will respond with a error response if it could not appl
 
     c:[{"clientid":"offending-client","id":"object-key","error":"401","ccids":["abcdef123456"]}]
 
+#### Error Responses
+
 Potentially error responses:
 
 - **400** : invalid id or invalid schema - change request did not conform to required fields
