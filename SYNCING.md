@@ -289,7 +289,11 @@ In some cases the server will respond with a error response if it could not appl
 
 Potentially error responses:
 
-- **400** : invalid change - change request did not conform to required fields
+- **400** : invalid id or invalid schema - change request did not conform to required fields
+- **401** : invalid permission
 - **404** : not found - object key or key version not found
-- **409** : data conflict - overwrite didn't match original data
-- **412** : change was empty
+- **405** : bad version
+- **409** : duplicate change
+- **412** : empty change
+- **413** : document too large
+- **440** : invalid diff (wrong key, bad delta)
