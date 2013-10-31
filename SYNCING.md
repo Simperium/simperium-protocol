@@ -16,6 +16,8 @@ Simperium offers a streaming API that is accessible over a [Websocket][] or [Soc
     - [cv (change version)](#index-change-version-cv)
     - [c (changes)](#change-c)
     - [h (heartbeat)](#heartbeat-h)
+    - [index (remote-index)](#remote-index)
+    - [log (remote-logging)](#remote-logging)
 4. [Syncing Bucket Objects](#syncing-bucket-objects)
     1. [Authorization](#authorization)
     - [First Sync](#first-sync)
@@ -23,6 +25,7 @@ Simperium offers a streaming API that is accessible over a [Websocket][] or [Soc
     - [Connecting with Existing Index](#connecting-with-existing-index)
     - [Receiving Remote Changes](#receiving-remote-changes)
     - [Sending Local Changes](#sending-local-changes)
+    - [Server to Client Commands](#server-to-client)
 
 
 ## Definitions of Terms
@@ -54,10 +57,12 @@ The available commands are:
 - [cv](#indexchangeversion-cv) - requests changes since a given index change version
 - [c](#change-c) - send or receive a set of changes to perform on a bucket's objects
 - [h](#heartbeat-h) - send and receive a heartbeat to maintain idle connection
+- [index](#remote-index) - sent from server to client to request local client state
+- [log](#remote-log) - sent from server to client to start/stop logging
 
 ### Authorizing: init
 
-When a client is ready to connet to a user's bucket it sends the `init` command. The init command contains a JSON payload with the following key value pairs: 
+When a client is ready to connet to a user's bucket it sends the `init` command. The init command contains a JSON payload with the following key value pairs:
 
 - **clientid** : a string that identifies the simperium client. Example: **simperium-andriod-1.0**
 - **api** : the api version to use. Example: **1**
@@ -80,9 +85,9 @@ The Simperium server will respond with an `auth` command which will also contain
 Example failed auth:
 
     0:auth:expired
-    
+
 Example successful auth:
-    
+
     0:auth:ender@example.com
 
 After authorizing the client can now issue commands for the initialized bucket.
@@ -97,11 +102,11 @@ The index command -- `i` -- allows the client to receive all of the keys and cor
 When connecting for the first time with an empty index, the client should issue an `i` command with a sane limit. The following example requests the bucket's index with a page size of 500 items.
 
     0:i::::500
-    
+
 The server will respond with the index results in a JSON payload prefixed with `i:`. Example response:
 
     0:i:{"current": "5119dafb37a401031d47c0f7", "index": [{"id": "one", "v": 2}, ... ], "mark": "5119450b37a401031d3bfdb9"}
-    
+
 The JSON payload contains these keys:
 
 - **current** : the bucket's current *change version* or `cv`/`ccid`. Clients should store this for future requests to indicate to the server which version of the index they have.
@@ -115,12 +120,12 @@ The JSON payload contains these keys:
 Clients can request an entire entity at any version stored on the server. The `e` command takes one parameter which is an entity's `key` and `version` seperated by a dot `.`:
 
     0:e:keyname.1
-    
+
 The server will respond with the same name and version followed by a new line `\n` and the response for the entity. If the entity represented by that `key` and `version` does not exist, the response is a single question mark `?`:
 
     0:e:keyname.1
     ?
-    
+
 Otherwise the response will be a JSON payload. The entity's data is stored in the payload's `data` key:
 
     0:e:keyname.1
@@ -196,7 +201,7 @@ A client needs to perform a specific set of operations to successfully keep its 
 To authorize access to a bucket the client will first need to obtain a user's access token using the [auth api][simperium-auth]. The client can then send an [`init`](#authorizinginit) command over the connection:
 
     0:init:{"name":"mybucket" ... }
-    
+
 The client should then wait for an `auth` response:
 
     0:auth:user@example.com
@@ -230,7 +235,7 @@ After receiving a set of index data a client can begin requesting entity data fr
 For each object in the `index` array of a `i` message, the client can request the entity's data using the [`e` "entity"](#entity-e). For example, this message asks the server to send `version` 2 of the entity stored at the key `qwerty`:
 
     0:i:qwerty.2
-    
+
 If the server has this entity and version it will respond with:
 
     0:i:qwerty.2
@@ -247,7 +252,7 @@ After sending an `init` message, if a client already has local index data stored
 The client should have stored the current *change version* for the index so it can ask the server for all changes since that version in order to catch up.
 
     0:cv:5119dafb37a401031d47c0f7
-    
+
 If the server knows about this change version for the connected bucket it will respond with the changes necessary to transform the local index to match the remote one:
 
     0:c:[{"clientid": "sjs-2012121301-9af05b4e9a95132f614c", "id": "newobject", "o": "M", "v": {"new": {"o": "+", "v": "object"}}, "ev": 1, "cv": "511aa58737a401031d57db90", "ccids": ["3a5cbd2f0a71fca4933fff5a54d22b60"]}]
@@ -305,6 +310,48 @@ In some cases the server will respond with a error response if it could not appl
 
     c:[{"clientid":"offending-client","id":"object-key","error":"401","ccids":["abcdef123456"]}]
 
+
+### Server to Client commands
+
+The server may ask the client at any time for some data
+
+- **index** - response should be the current local state of a specific bucket
+- **log** - sent to client to turn on/off logging and indicate logging level
+
+#### Remote index
+
+Server may send a command requesting the index for a particular bucket, this command will be sent on a particular channel that is already open
+
+Example request from server on channel 0:
+
+    0:index
+
+Response from client should follow:
+
+    0:index:{ current: <cv>, index: { {id: <eid>, v: <version>}, ... }, pending: { { id: <eid>, sv: <version>, ccid: <ccid> }, ... }, extra: { ? } }
+
+
+#### Remote logging
+
+Server may ask the client to start sending log messages from the client, this request will be sent without a channel prefix, responses should also be sent without a prefix.
+
+We currently define 3 states of logging:
+
+    **0** : Client should stop sending remote logging messages
+    **1** : Client should send logging messages
+    **2** : Client should send "verbose" logging messages
+
+The response from the client should be a json object containing at least a "log" field. The value from this field will be logged.
+
+Example request from server (requesting normal logging):
+
+    log:1
+
+Example response:
+
+    log:{"log":"<some log message>"}
+
+
 #### Error Responses
 
 Potential error responses:
@@ -330,8 +377,8 @@ Handling Errors:
 **405** : Bad version, client referencing a wrong or missing `sv`. This is a potential data loss scenario: server may not have enough history to resolve conflicts. Client has two options:
   - re-load the entity (via `e` command) then overwrite the local changes
   - send a change with full object (which will overwrite remote changes, history will still be available) referencing the current `sv`
-    
-**409** : Duplicate change, client can safely throw away the change it is attempting to send 
+
+**409** : Duplicate change, client can safely throw away the change it is attempting to send
 
 **412** : Empty change, nothing was changed on the server, client can ignore (and stop sending change).
 
@@ -340,6 +387,6 @@ Handling Errors:
 **440** : Server could not apply diff, resend the change with additional parameter `d` that contains the whole JSON data object. Current known scenarios where this could happen:
   - Client generated an invalid diff (some old versions of iOS library)
   - Client is sending string diffs and using a different encoding than server
-    
+
 
 
