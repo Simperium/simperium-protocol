@@ -234,11 +234,11 @@ After receiving a set of index data a client can begin requesting entity data fr
 
 For each object in the `index` array of a `i` message, the client can request the entity's data using the [`e` "entity"](#entity-e). For example, this message asks the server to send `version` 2 of the entity stored at the key `qwerty`:
 
-    0:i:qwerty.2
+    0:e:qwerty.2
 
 If the server has this entity and version it will respond with:
 
-    0:i:qwerty.2
+    0:e:qwerty.2
     {"data":{"message":"hello world"}}
 
 The entity's data is stored in the `data` key of the JSON payload. The client should store both the data and the version locally so it can request changes for the entity in the future.
@@ -257,9 +257,9 @@ If the server knows about this change version for the connected bucket it will r
 
     0:c:[{"clientid": "sjs-2012121301-9af05b4e9a95132f614c", "id": "newobject", "o": "M", "v": {"new": {"o": "+", "v": "object"}}, "ev": 1, "cv": "511aa58737a401031d57db90", "ccids": ["3a5cbd2f0a71fca4933fff5a54d22b60"]}]
 
-If the server doesn't have the requested *change version* it will send this `c` message:
+If the server doesn't have the requested *change version* it will send this `cv` message:
 
-    0:c:?
+    0:cv:?
 
 At which point the client will need to [reload the index](#requesting-objects). To save space the server starts aggregating older change versions so a single change version is not permanently stored forever.
 
@@ -274,9 +274,9 @@ To apply these changes a client will want to loop through each change and perfor
   1. Confirm the `change.cv` matches the local index's *change version*
       - If it doesn't match request change versions? `cv:CURRENT_VERSION`
   2. Get the local entity using `change.id` as the key
-      - If client doesn't have the entity request it? `e:%change.cv%.%change.ev%`
+      - If client doesn't have the entity, request it using [e](#entity-e) command
   3. Confirm that the local entity version matches the `change.sv`
-      - If they don't match request the entity? `e:%change.cv:%change.ev%`
+      - If they don't match, [reload](#reloading-an-object) the object
   4. Apply the change:
       - If `change.o` is `-` remove the entity from the local store
       - If `change.o` is `M` apply `change.v` using [jsondiff][]
