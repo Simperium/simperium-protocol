@@ -25,7 +25,7 @@ Simperium offers a streaming API that is accessible over a [Websocket][] or [Soc
     - [Connecting with Existing Index](#connecting-with-existing-index)
     - [Receiving Remote Changes](#receiving-remote-changes)
     - [Sending Local Changes](#sending-local-changes)
-    - [Server to Client Commands](#server-to-client)
+    - [Server to Client Commands](#server-to-client-commands)
 
 
 ## Definitions of Terms
