@@ -276,17 +276,15 @@ A client will receive remote changes from the server either by explicitly asking
 
 To apply these changes a client will want to loop through each change and perform the operation described in the change object:
 
-  1. Confirm the `change.cv` matches the local index's *change version*
-      - If it doesn't match request change versions? `cv:CURRENT_VERSION`
-  2. Get the local entity using `change.id` as the key
+  1. Get the local entity using `change.id` as the key
       - If client doesn't have the entity, request it using [e](#entity-e) command
-  3. Confirm that the local entity version matches the `change.sv`
+  2. Confirm that the local entity version matches the `change.sv`
       - If they don't match, [reload](#reloading-an-object) the object
-  4. Apply the change:
+  3. Apply the change:
       - If `change.o` is `-` remove the entity from the local store
       - If `change.o` is `M` apply `change.v` using [jsondiff][]
       - Set the entity's version to `change.ev`
-  5. Save the `change.cv` for the index
+  4. Save the `change.cv` for the index
 
 #### Error cases for receiving changes
 
