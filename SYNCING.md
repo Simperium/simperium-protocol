@@ -65,7 +65,7 @@ The available commands are:
 When a client is ready to connet to a user's bucket it sends the `init` command. The init command contains a JSON payload with the following key value pairs:
 
 - **clientid** : a string that identifies the simperium client. Example: **simperium-andriod-1.0**
-- **api** : the api version to use. Example: **1**
+- **api** : the api version to use. Current: **1.1**
 - **token** : a user's access token obtained via the auth api.
 - **app_id** : a simperium app id. Example: **abusers-headset-123**
 - **name** : the name of the bucket to use. Example: **notes**
@@ -80,11 +80,16 @@ An example `init` command with a channel prefix `0`:
 
     0:init:{"api":1,"client_id":"android-1.0","token":"abc123","app_id":"abusers-headset","name":"notes"}
 
-The Simperium server will respond with an `auth` command which will also contain either the authorized user's email address, or if authorization failed, the string `expired`.
+The Simperium server will respond with an `auth` command which will also contain either the authorized user's email address, or if authorization failed, a JSON error object.
 
 Example failed auth:
 
-    0:auth:expired
+    0:auth:{"msg":"Token invalid", "code":401}
+
+Possible error codes:
+
+- 401 - The token is affirmatively invalid, user needs new token.
+- 500 - Other error, may be, bucket name is not valid, user has valid token but not permission for bucket, bucket limit reached, etc.
 
 Example successful auth:
 
