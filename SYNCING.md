@@ -331,7 +331,7 @@ Example request from server on channel 0:
 
 Response from client should follow:
 
-    0:index:{ current: <cv>, index: { {id: <eid>, v: <version>}, ... }, pending: { { id: <eid>, sv: <version>, ccid: <ccid> }, ... }, extra: { ? } }
+    0:index:{ current: <cv>, index: [ {id: <eid>, v: <version>}, ... ], pending: [ { id: <eid>, sv: <version>, ccid: <ccid> }, ... ], extra: { ? } }
 
 
 #### Remote logging
