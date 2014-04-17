@@ -1,8 +1,8 @@
 # Simperium Syncing Protocol
 
-Implementers of syncing clients an reference the [Syncing][] documentation.
+Implementers of syncing clients can reference the [Syncing][] documentation.
 
-[Syncing]: ./Syncing.md
+[Syncing]: ./SYNCING.md
 
 Clients for reference:
 
