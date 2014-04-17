@@ -88,6 +88,7 @@ Example failed auth:
 
 Possible error codes:
 
+- 400 - The token is formatted incorrectly. (Simperium: 32 or more alphanumeric chars, WP: Follow HMAC or WPCC style)
 - 401 - The token is affirmatively invalid, user needs new token.
 - 500 - Other error, may be, bucket name is not valid, user has valid token but not permission for bucket, bucket limit reached, etc.
 
@@ -381,7 +382,7 @@ Handling Errors:
   - re-load the entity (via `e` command) then overwrite the local changes
   - send a change with full object (which will overwrite remote changes, history will still be available) referencing the current `sv`
 
-**409** : Duplicate change, client can safely throw away the change it is attempting to send
+**409** : Duplicate change, client should stop sending this change and retrieve changes since its last syncd `cv` to process the changes list from the server. In normal case the remote changes list will contain the change that caused the duplicate error. If it doesn't, client will need to re-load this object. In either case, client will know that the server version of the object already incorporates the delta that this change contains.
 
 **412** : Empty change, nothing was changed on the server, client can ignore (and stop sending change).
 
