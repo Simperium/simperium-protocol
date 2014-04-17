@@ -2,7 +2,7 @@
 
 Implementers of syncing clients an reference the [Syncing][] documentation.
 
-[Syncing]:[Syncing.md]
+[Syncing]: ./Syncing.md
 
 Clients for reference:
 
