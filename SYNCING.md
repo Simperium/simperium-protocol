@@ -282,7 +282,7 @@ To apply these changes a client will want to loop through each change and perfor
   2. Confirm that the local entity version matches the `change.sv`
       - If they don't match, [reload](#reloading-an-object) the object
   3. Apply the change:
-      - If `change.o` is `-` remove the entity from the local store
+      - If `change.o` is `-` remove the entity from the local store only if the local entity has no pending changes.
       - If `change.o` is `M` apply `change.v` using [jsondiff][]
       - Set the entity's version to `change.ev`
   4. Save the `change.cv` for the index
@@ -370,13 +370,13 @@ Potential error responses:
 - **440** : invalid diff (wrong key, bad delta), invalid schema
 - **5xx** : internal server error
 
-Handling Errors:
+Handling Change Errors:
 
 **400** : If it was an invalid id, changing the id could make the call succeed. If it was a schema violation, then correction will depend on the schema. If client cannot tell, then do not re-send since unless something changes, 400 will be sent every time.
 
 **401** : Grab a new authentication token (or possible you just don't have access to that document).
 
-**404** : Client is referencing an object that does not exist on server. If client is insistent, then changing the diff such that it is creating the object instead should make this succeed.
+**404** : Client is referencing an object that does not exist on server. By default client should send the change with full object (this will re-create the object)
 
 **405** : Bad version, client referencing a wrong or missing `sv`. This is a potential data loss scenario: server may not have enough history to resolve conflicts. Client has two options:
   - re-load the entity (via `e` command) then overwrite the local changes
