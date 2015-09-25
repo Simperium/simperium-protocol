@@ -1,5 +1,9 @@
 # API Changes
 
+## 1.1.1
+- For the `init` command, optionally specify the `username` if the API key
+  requires it.
+
 ## 1.1
 
 - For the `cv` command, if the supplied parameter is not formatted properly or we cannot return all the changes from that cursor, the response will now be `cv:?`. Previously, the server responded with `c:?`
