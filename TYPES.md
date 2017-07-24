@@ -8,7 +8,7 @@ There are certain types of data that Simperium uses which have specific constrai
 |---|:-:|:-:|---|---|
 | **app id** | | | `a-z` `A-Z` `0-9` `.` `_` `-` | case insensitive |
 | **bucket name** | 1 | 64 | `a-z` `A-Z` `0-9` `.` `_` `-` `%` | |
-| **ccid** | 1 | 256 | `a-f` `A-F` `0-9` | [type 4 (random) UUID](https://tools.ietf.org/html/rfc4122) in hex |
+| **ccid** | 1 | 256 | `a-f` `A-F` `0-9` | _client change id_, usually a [type 4 (random) UUID](https://tools.ietf.org/html/rfc4122) in hex but anything which uniquely identifies the change being requested. is used to detect duplicate change requests |
 | **change type** | | | `M` `-` `EMPTY` `DROP` | see _change types_ below|
 | **client id** | 1 | 256 | | |
 | **entity key** | 1 | 256 | `a-z` `A-Z` `0-9` `.` `_` `-` `%` `@` | |
