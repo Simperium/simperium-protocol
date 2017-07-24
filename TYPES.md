@@ -10,7 +10,7 @@ There are certain types of data that Simperium uses which have specific constrai
 | **bucket name** | 1 | 64 | `a-z` `A-Z` `0-9` `.` `_` `-` `%` | |
 | **ccid** | 1 | 256 | `a-f` `A-F` `0-9` | _client change id_, usually a [type 4 (random) UUID](https://tools.ietf.org/html/rfc4122) in hex but anything which uniquely identifies the change being requested. is used to detect duplicate change requests |
 | **change type** | | | `M` `-` `EMPTY` `DROP` | see _change types_ below|
-| **client id** | 1 | 256 | | |
+| **client id** | 1 | 256 | | should uniquely identifiy the client app name _and_ the device on which it's running |
 | **entity key** | 1 | 256 | `a-z` `A-Z` `0-9` `.` `_` `-` `%` `@` | |
 | **entity version** | | | integer | |
 
