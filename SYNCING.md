@@ -100,8 +100,10 @@ After authorizing the client can now issue commands for the initialized bucket.
 
 ### Index: i
 
-The index command -- `i` -- allows the client to receive all of the keys and corresponding version numbers for the objects stored in the bucket. The index command takes two parameters sperated by double colons `::`:
+The index command -- `i` -- allows the client to receive all of the keys and corresponding version numbers for the objects stored in the bucket. The index command takes four parameters sperated by colons `:`:
 
+- **data** : *optional* if `1` then the index will also return the data for each entity; otherwise omit entirely
+- **offset** : *optional* provides an offset pointer into the results; can be used with sort values
 - **mark** : *optional* a cursor that indicates where in the index you are requesting
 - **limit** : the maximum number of items to return (optional? is there a default on the server side?)
 
@@ -120,6 +122,16 @@ The JSON payload contains these keys:
   - **id** : the entity's unique key name
   - **v** : the entity's version number
 - **mark** : a cursor to be used in another **i:** request to fetch the next page of indexes for the bucket. **Note:** only present if there is more data to fetch from the index.
+
+If we also want to fill out the bucket data to mirror the server and do so on this initial load we can merge the requests into one by passing the `data` parameter.
+
+    0:i:1:::500
+    
+The server will now respond with a similar payload as before, but this time each item in the `index` arreay will also contain an additional key:
+
+- **d** : the value of the entity's data 
+
+    0:i:{"current": "5119dafb37a401031d47c0f7", "index": [{"id": "one", "v": 2, "d": {"your": "data"}}, ... ], "mark": "5119450b37a401031d3bfdb9"}
 
 ### Entity: e
 
