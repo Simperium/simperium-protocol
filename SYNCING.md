@@ -67,6 +67,7 @@ When a client is ready to connet to a user's bucket it sends the `init` command.
 - **clientid** : a string that identifies the simperium client. Example: **simperium-andriod-1.0**
 - **api** : the api version to use. Current: **1.1**
 - **token** : a user's access token obtained via the auth api.
+- **username** : username used with the auth api
 - **app_id** : a simperium app id. Example: **abusers-headset-123**
 - **name** : the name of the bucket to use. Example: **notes**
 - **library** : the library name of the connecting client: **simperium-android**
@@ -78,7 +79,7 @@ Optionally, the init request can contain a command to be executed upon initializ
 
 An example `init` command with a channel prefix `0`:
 
-    0:init:{"api":1,"client_id":"android-1.0","token":"abc123","app_id":"abusers-headset","name":"notes"}
+    0:init:{"api":1,"client_id":"android-1.0","token":"abc123","username":"jorge@test.com","app_id":"abusers-headset","name":"notes"}
 
 The Simperium server will respond with an `auth` command which will also contain either the authorized user's email address, or if authorization failed, a JSON error object.
 
